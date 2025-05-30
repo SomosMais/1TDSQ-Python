@@ -1,11 +1,7 @@
 from datetime import date
 import oracledb
 
-data_atual = date.today()
-data_texto = data_atual.strftime('%y-%m-%d')
-data_criacao = data_texto
 
-print(data_criacao)
 
 
 def get_conexao():
@@ -74,4 +70,11 @@ def historico_pedido():
     print(lista_pedido)
 
 
-historico_pedido()
+def cancelar_pedido():
+    with get_conexao() as con:
+        with con.cursor() as cur:
+            cur.execute("DELETE FROM GS_Pedido_Ajuda WHERE id_pedido = 5")
+            con.commit()
+
+
+cancelar_pedido()

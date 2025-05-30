@@ -136,6 +136,21 @@ def historico_pedido(id: int):
        return (info, 406) 
     
 
+@app.route("/cancelar_pedido/<int:id>", methods=["GET"])
+def cancelar_pedido(id: int):
 
+    with get_conexao() as con:
+        with con.cursor() as cur:
+            cur.execute(f"DELETE FROM GS_Pedido_Ajuda WHERE id_pedido = {id}")
+            linhas_afetadas = cur.rowcount
+            con.commit()
+        
+        if linhas_afetadas != 0:
+            info = {"msg": "Pedido cancelado com sucesso!", "status": 200}
+            return (info, 200)
+        else:
+            info = {"msg": f"Não existe pedido com o id {id}", "status": 406}
+            return (info, 406)
+    
 
 app.run(debug=True)
