@@ -4,6 +4,7 @@
 # •    ✅ Visualização de status do pedido (Pendente, Em andamento, Concluído).
 # •    ✅ Histórico de pedidos anteriores
 # •    ✅ Cancelar ou atualizar pedido
+# API de todos os clientes
 
 # •    ✅ Gráficos sobre enchentes
 
@@ -30,6 +31,8 @@ def get_conexao():
 
 @app.route("/cadastro_pedido_ajuda", methods=["POST"])
 def cadastro_ajuda():
+
+    # mudar de id_usuario/empresa para email
 
     insercao = request.get_json()
     
@@ -64,12 +67,43 @@ def cadastro_ajuda():
     # }
 
 
-@app.route("/mostrar_ongs", methods=["GET"])
-def mostrar_ongs():
-    
+@app.route("/mostrar_usuarios", methods=["GET"])
+def mostrar_usuarios():
+
     with get_conexao() as con:
         with con.cursor() as cur:
-            cur.execute("select * from GS_Empresa ORDER BY id_empresa")
+            cur.execute("SELECT u.id_usuario, u.nome_usuario, u.email_usuario, u.senha_usuario, u.cpf, u.id_endereco, ender.logradouro, ender.numero, ender.cep, ender.bairro, ender.cidade, ender.estado FROM GS_Usuario u JOIN GS_Endereco ender ON u.id_endereco = ender.id_endereco")
+
+            captura_banco = cur.fetchall()
+
+    lista_usuarios = []
+
+    for usuarios in captura_banco:
+        id_usuario = usuarios[0]
+        nome_usuario = usuarios[1]
+        email_usuario = usuarios[2]
+        senha_usuario = usuarios[3]
+        cpf = usuarios[4]
+        id_endereco = usuarios[5]
+        logradouro = usuarios[6]
+        numero = usuarios[7]
+        cep = usuarios[8]
+        bairro = usuarios[9]
+        cidade = usuarios[10]
+        estado = usuarios[11]
+
+        lista_usuarios.append({"id": id_usuario, "Nome": nome_usuario, "Email": email_usuario, "CPF": cpf, "id_endereco": id_endereco, "endereco": [logradouro, numero, cep, bairro, cidade, estado]})
+    
+    return(jsonify(lista_usuarios), 200)
+
+
+@app.route("/mostrar_ongs", methods=["GET"])
+def mostrar_ongs():
+
+    with get_conexao() as con:
+        with con.cursor() as cur:
+            cur.execute("SELECT e.id_empresa, e.nome_empresa, e.email_empresa, e.senha_empresa, e.cnpj, e.id_atuacao, ender.id_endereco, ender.logradouro, ender.numero, ender.cep, ender.bairro, ender.cidade, ender.estado FROM GS_Empresa e JOIN GS_Endereco ender ON e.id_endereco = ender.id_endereco")
+
             captura_banco = cur.fetchall()
     
     lista_empresas = []
@@ -82,8 +116,14 @@ def mostrar_ongs():
         cnpj = empresas[4]
         id_atuacao = empresas[5]
         id_endereco = empresas[6]
+        logradouro = empresas[7]
+        numero = empresas[8]
+        cep = empresas[9]
+        bairro = empresas[10]
+        cidade = empresas[11]
+        estado = empresas[12]
 
-        lista_empresas.append({"id": id_empresa, "Nome": nome_empresa, "Email": email_empresa, "CNPJ": cnpj, "id_atuacao": id_atuacao, "id_endereco": id_endereco})
+        lista_empresas.append({"id": id_empresa, "Nome": nome_empresa, "Email": email_empresa, "CNPJ": cnpj, "id_atuacao": id_atuacao, "id_endereco": id_endereco, "endereco": [logradouro, numero, cep, bairro, cidade, estado]})
     
     return (jsonify(lista_empresas), 200)
 
@@ -109,6 +149,10 @@ def status_pedido(id: int):
 @app.route("/historico/cliente/<int:id>", methods=["GET"])
 def historico_pedido(id: int):
 
+    # mudar de id_usuario para email_usuario
+
+    data_aceitacao = None
+
     with get_conexao() as con:
         with con.cursor() as cur:
             cur.execute(f"SELECT u.nome_usuario, u.id_usuario, p.id_pedido, p.descricao, p.data_criacao, p.data_aceitacao, p.urgente_pedido, s.nome_status, t.tipo_pedido FROM GS_Pedido_Ajuda p JOIN GS_Usuario u ON p.id_usuario = u.id_usuario LEFT JOIN GS_Status s ON p.id_status = s.id_status LEFT JOIN GS_Tipo_Pedido t ON p.id_tipo_pedido = t.id_tipo_pedido WHERE u.id_usuario = {id} ORDER BY p.data_criacao")
@@ -122,7 +166,10 @@ def historico_pedido(id: int):
         id_pedido = pedidos[2]
         descricao = pedidos[3]
         data_criacao = pedidos[4].strftime('%d-%m-%y') # data_criacao
-        data_aceitacao = pedidos[5].strftime('%d-%m-%y') # data_aceitacao
+            
+        if data_aceitacao:
+            data_aceitacao = pedidos[5].strftime('%d-%m-%y') # data_aceitacao
+        
         urgente = pedidos[6]
         status = pedidos[7]
         tipo_pedido = pedidos[8]
@@ -185,7 +232,6 @@ def atualizar_pedido(id: int):
         info = {"msg": "não foi encontrada nenhuma informação necessária", "status": 406}
         return (info, 406)
 
-
     if linhas_afetadas != 0:
         info = {"msg": "Pedido atualizado com sucesso!", "status": 200}
         return (info, 200)
@@ -201,6 +247,10 @@ def atualizar_pedido(id: int):
     # with get_conexao() as con:
     #     with con.cursor() as cur:
     #         cur.execute("")
+
+
+def aceitar_pedido():
+    pass
 
 
 app.run(debug=True)
