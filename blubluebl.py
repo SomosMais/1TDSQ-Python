@@ -32,7 +32,6 @@ def mostrar_ongs():
         print(i)
 
 
-
 def status_pedido():
     id_pedido = 2
 
@@ -75,6 +74,18 @@ def cancelar_pedido():
         with con.cursor() as cur:
             cur.execute("DELETE FROM GS_Pedido_Ajuda WHERE id_pedido = 5")
             con.commit()
+
+
+def atualizar_pedido():
+    # daria para mudar, descrição, urgência e tipo
+    # método patch
+
+    insercao = request
+
+    with get_conexao() as con:
+        with con.cursor() as cur:
+            cur.execute("")
+
 
 
 cancelar_pedido()

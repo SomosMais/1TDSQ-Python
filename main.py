@@ -33,19 +33,19 @@ def cadastro_ajuda():
 
     insercao = request.get_json()
     
-    if not insercao.get("descricao") or not insercao.get("urgente") or not insercao.get("id_usuario") or not insercao.get("id_empresa") or not insercao.get("id_status") or not insercao.get("tipo_pedido"):
+    if not insercao.get("descricao") or not insercao.get("urgencia") or not insercao.get("id_usuario") or not insercao.get("id_empresa") or not insercao.get("id_status") or not insercao.get("tipo"):
         info = {"msg": "Não foi encontrada uma das informações necessárias", "status": 406}
         return (info, 406)
     
     data_atual = date.today()
     descricao = insercao["descricao"]
-    urgente_pedido = insercao["urgente"]
-    tipo_pedido = insercao["tipo_pedido"]
+    urgente_pedido = insercao["urgencia"]
+    tipo = insercao["tipo"]
     usuario = insercao["id_usuario"]
 
     with get_conexao() as con:
         with con.cursor() as cur:
-            cur.execute(f"INSERT INTO GS_Pedido_Ajuda (descricao, data_criacao, urgente_pedido, id_usuario, id_empresa, id_status, id_tipo_pedido) VALUES (:1, :2, :3, :4, 1, 1, :5)", (descricao, data_atual, urgente_pedido, usuario, tipo_pedido))
+            cur.execute(f"INSERT INTO GS_Pedido_Ajuda (descricao, data_criacao, urgente_pedido, id_usuario, id_empresa, id_status, id_tipo_pedido) VALUES (:1, :2, :3, :4, 1, 1, :5)", (descricao, data_atual, urgente_pedido, usuario, tipo))
             con.commit()
     
     info = {"msg": "Pedido recebido", "status": 201}
@@ -55,12 +55,12 @@ def cadastro_ajuda():
     # Exemplo de dicionário
 
     # {
-    #     "descricao": "[descricao]"
-    #     "urgente": "[S ou N]"
-    #     "id_usuario": [id do usuario logado]
-    #     "id_empresa": [1, nenhuma empresa aceitou ainda]
-    #     "id_status": [1, sempre vai entrar como pendente]
-    #     "tipo_pedido": [de 1 a 13]
+    # "descricao": "[descricao]",
+    # "urgencia": "[S ou N]",
+    # "id_usuario": [id do usuario logado],
+    # "id_empresa": [1, nenhuma empresa aceitou ainda],
+    # "id_status": [1, sempre vai entrar como pendente],
+    # "tipo": [de 1 a 13]
     # }
 
 
@@ -145,12 +145,62 @@ def cancelar_pedido(id: int):
             linhas_afetadas = cur.rowcount
             con.commit()
         
-        if linhas_afetadas != 0:
-            info = {"msg": "Pedido cancelado com sucesso!", "status": 200}
-            return (info, 200)
-        else:
-            info = {"msg": f"Não existe pedido com o id {id}", "status": 406}
-            return (info, 406)
+    if linhas_afetadas != 0:
+        info = {"msg": "Pedido cancelado com sucesso!", "status": 200}
+        return (info, 200)
+    else:
+        info = {"msg": f"Não existe pedido com o id {id}", "status": 406}
+        return (info, 406)
+
+
+@app.route("/atualizar_pedido/<int:id>", methods=["PATCH"])
+def atualizar_pedido(id: int):
+    # daria para mudar, descrição, urgência e tipo
+    # método patch
+
+    insercao = request.get_json()
+
+    if insercao.get("descricao"):
+        with get_conexao() as con:
+            with con.cursor() as cur:
+                cur.execute("UPDATE GS_Pedido_Ajuda SET descricao = :1 WHERE id_pedido = :2", (insercao["descricao"], id))
+                linhas_afetadas = cur.rowcount
+                con.commit()
+        
+    if insercao.get("urgencia"):
+        with get_conexao() as con:
+            with con.cursor() as cur:
+                cur.execute("UPDATE GS_Pedido_Ajuda SET urgente_pedido = :1 WHERE id_pedido = :2", (insercao["urgencia"], id))
+                linhas_afetadas = cur.rowcount
+                con.commit()
+        
+    if insercao.get("tipo"):
+        with get_conexao() as con:
+            with con.cursor() as cur:
+                cur.execute("UPDATE Gs_Pedido_Ajuda SET id_tipo_pedido = :1 WHERE id_pedido = :2", (insercao["tipo"], id))
+                linhas_afetadas = cur.rowcount
+                con.commit()
+        
+    if not insercao.get("descricao") and not insercao.get("urgencia") and not insercao.get("tipo"):
+        info = {"msg": "não foi encontrada nenhuma informação necessária", "status": 406}
+        return (info, 406)
+
+
+    if linhas_afetadas != 0:
+        info = {"msg": "Pedido atualizado com sucesso!", "status": 200}
+        return (info, 200)
+    else:
+        info = {"msg": f"Não existe pedido com o id {id}", "status": 406}
+        return (info, 406)    
     
+
+    
+    # UPDATE clientes SET nome = 'Maria Silva', telefone = '99999-8888' WHERE id = 3;
+
+
+    # with get_conexao() as con:
+    #     with con.cursor() as cur:
+    #         cur.execute("")
+
 
 app.run(debug=True)
