@@ -32,8 +32,6 @@ def get_conexao():
 @app.route("/cadastro_pedido_ajuda", methods=["POST"])
 def cadastro_ajuda():
 
-    # mudar de id_usuario/empresa para email
-
     insercao = request.get_json()
     
     if not insercao.get("descricao") or not insercao.get("urgencia") or not insercao.get("email_usuario") or not insercao.get("tipo"):
@@ -141,16 +139,14 @@ def status_pedido(id: int):
         return (info, 406)
 
 
-@app.route("/historico/cliente/<int:id>", methods=["GET"])
-def historico_pedido(id: int):
-
-    # mudar de id_usuario para email_usuario
+@app.route("/historico/cliente/<email>", methods=["GET"])
+def historico_pedido(email):
 
     data_aceitacao = None
 
     with get_conexao() as con:
         with con.cursor() as cur:
-            cur.execute(f"SELECT u.nome_usuario, u.id_usuario, p.id_pedido, p.descricao, p.data_criacao, p.data_aceitacao, p.urgente_pedido, s.nome_status, t.tipo_pedido FROM GS_Pedido_Ajuda p JOIN GS_Usuario u ON p.id_usuario = u.id_usuario LEFT JOIN GS_Status s ON p.id_status = s.id_status LEFT JOIN GS_Tipo_Pedido t ON p.id_tipo_pedido = t.id_tipo_pedido WHERE u.id_usuario = {id} ORDER BY p.data_criacao")
+            cur.execute(f"SELECT u.nome_usuario, u.id_usuario, p.id_pedido, p.descricao, p.data_criacao, p.data_aceitacao, p.urgente_pedido, s.nome_status, t.tipo_pedido FROM GS_Pedido_Ajuda p JOIN GS_Usuario u ON p.id_usuario = u.id_usuario LEFT JOIN GS_Status s ON p.id_status = s.id_status LEFT JOIN GS_Tipo_Pedido t ON p.id_tipo_pedido = t.id_tipo_pedido WHERE u.email_usuario = '{email}' ORDER BY p.data_criacao")
             captura = cur.fetchall()
     
     lista_pedido = []
@@ -174,7 +170,7 @@ def historico_pedido(id: int):
     if len(lista_pedido) >= 1:
         return (jsonify(lista_pedido), 200)
     else:
-       info = {"msg": f"Não existe usuário com o id {id}", "status": 406}
+       info = {"msg": f"Não existe usuário com o email {email}", "status": 406}
        return (info, 406) 
     
 
@@ -197,8 +193,6 @@ def cancelar_pedido(id: int):
 
 @app.route("/atualizar_pedido/<int:id>", methods=["PATCH"])
 def atualizar_pedido(id: int):
-    # daria para mudar, descrição, urgência e tipo
-    # método patch
 
     insercao = request.get_json()
 

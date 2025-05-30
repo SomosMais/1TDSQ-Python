@@ -1,8 +1,8 @@
+from flask import Flask, jsonify, request
 from datetime import date
 import oracledb
 
-
-
+app = Flask(__name__)
 
 def get_conexao():
     return oracledb.connect(user="rm560485", password="fiap25", dsn="oracle.fiap.com.br/orcl")
@@ -88,39 +88,44 @@ def atualizar_pedido():
 
 
 
-# @app.route("/cadastro_pedido_ajuda", methods=["POST"])
-def cadastro_ajuda():
+@app.route("/historico/cliente/<email>", methods=["GET"])
+def historico_pedido(email):
 
-    # mudar de id_usuario/empresa para email
+    # mudar de id_usuario para email_usuario
 
-    # insercao = request.get_json()
-    
-    # if not insercao.get("descricao") or not insercao.get("urgencia") or not insercao.get("email_usuario") or not insercao.get("tipo"):
-    #     info = {"msg": "Não foi encontrada uma das informações necessárias", "status": 406}
-    #     return (info, 406)
-    
-    # data_atual = date.today()
-    # descricao = insercao["descricao"]
-    # urgente_pedido = insercao["urgencia"]
-    # tipo = insercao["tipo"]
-    # usuario = insercao["email_usuario"]
+    data_aceitacao = None
 
     with get_conexao() as con:
         with con.cursor() as cur:
-            cur.execute(f"SELECT id_usuario FROM gs_usuario WHERE email_usuario = 'cleyton777@gmail.com'")
-            captura_id_usuario = cur.fetchone()
+            cur.execute(f"SELECT u.nome_usuario, u.id_usuario, p.id_pedido, p.descricao, p.data_criacao, p.data_aceitacao, p.urgente_pedido, s.nome_status, t.tipo_pedido FROM GS_Pedido_Ajuda p JOIN GS_Usuario u ON p.id_usuario = u.id_usuario LEFT JOIN GS_Status s ON p.id_status = s.id_status LEFT JOIN GS_Tipo_Pedido t ON p.id_tipo_pedido = t.id_tipo_pedido WHERE u.email_usuario = '{email}' ORDER BY p.data_criacao")
+            captura = cur.fetchall()
     
-    id_usuario = captura_id_usuario
+    lista_pedido = []
 
-    print(id_usuario)
+    for pedidos in captura:
+        nome_usuario = pedidos[0]
+        id_usuario = pedidos[1]
+        id_pedido = pedidos[2]
+        descricao = pedidos[3]
+        data_criacao = pedidos[4].strftime('%d-%m-%y') # data_criacao
+            
+        if data_aceitacao:
+            data_aceitacao = pedidos[5].strftime('%d-%m-%y') # data_aceitacao
+        
+        urgente = pedidos[6]
+        status = pedidos[7]
+        tipo_pedido = pedidos[8]
 
-    # with get_conexao() as con:
-    #     with con.cursor() as cur:
-    #         cur.execute(f"INSERT INTO GS_Pedido_Ajuda (descricao, data_criacao, urgente_pedido, id_usuario, id_empresa, id_status, id_tipo_pedido) VALUES (:1, :2, :3, :4, 1, 1, :5)", (descricao, data_atual, urgente_pedido, id_usuario, tipo))
-    #         con.commit()
-    
-    # info = {"msg": "Pedido recebido", "status": 201}
-    # return jsonify(info), 201
+        lista_pedido.append({"Nome": nome_usuario, "id_usuario": id_usuario, "id_pedido": id_pedido, "descricao": descricao, "data_criacao": data_criacao, "data_aceitacao": data_aceitacao, "urgente": urgente, "status": status, "tipo pedido": tipo_pedido})
+
+    if len(lista_pedido) >= 1:
+        return (jsonify(lista_pedido), 200)
+    else:
+       info = {"msg": f"Não existe usuário com o email {email}", "status": 406}
+       return (info, 406) 
 
 
-cadastro_ajuda()
+# cadastro_ajuda()
+
+
+app.run(debug=True)
