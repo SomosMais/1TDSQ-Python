@@ -5,6 +5,9 @@
 # •    ✅ Histórico de pedidos anteriores
 # •    ✅ Cancelar ou atualizar pedido
 # API de todos os clientes
+# número de ongs
+# número de pedidos concluídos
+
 
 # •    ✅ Gráficos sobre enchentes
 
@@ -58,6 +61,32 @@ def cadastro_ajuda():
     
     info = {"msg": "Pedido recebido", "status": 201}
     return jsonify(info), 201
+
+
+@app.route("/numero_ongs", methods=["GET"])
+def numero_ongs():
+
+    with get_conexao() as con:
+        with con.cursor() as cur:
+            cur.execute("SELECT count(*) FROM gs_empresa")
+            contagem = cur.fetchone()[0]
+    
+    dicionario = {"Numero de empresas": contagem}
+
+    return (jsonify(dicionario), 200)
+
+
+@app.route("/numero_pedidos_concluidos", methods=["GET"])
+def numero_pedidos_concluidos():
+
+    with get_conexao() as con:
+        with con.cursor() as cur:
+            cur.execute("SELECT COUNT(*) FROM GS_Pedido_Ajuda WHERE id_status = 3")
+            contagem = cur.fetchone()[0]
+    
+    dicionario = {"Numero de pedidos concluidos": contagem}
+
+    return (jsonify(dicionario), 200)    
 
 
 @app.route("/mostrar_usuarios", methods=["GET"])
@@ -238,7 +267,13 @@ def atualizar_pedido(id: int):
     #         cur.execute("")
 
 
+@app.route("/aceitar_pedido", methods=['GET'])
 def aceitar_pedido():
+    pass
+
+
+@app.route("/visualizar_pedidos", methods=["GET"])
+def visualizar_pedidos():
     pass
 
 

@@ -2,7 +2,7 @@ from flask import Flask, jsonify, request
 from datetime import date
 import oracledb
 
-app = Flask(__name__)
+# app = Flask(__name__)
 
 def get_conexao():
     return oracledb.connect(user="rm560485", password="fiap25", dsn="oracle.fiap.com.br/orcl")
@@ -88,7 +88,7 @@ def atualizar_pedido():
 
 
 
-@app.route("/historico/cliente/<email>", methods=["GET"])
+# @app.route("/historico/cliente/<email>", methods=["GET"])
 def historico_pedido(email):
 
     # mudar de id_usuario para email_usuario
@@ -125,7 +125,18 @@ def historico_pedido(email):
        return (info, 406) 
 
 
-# cadastro_ajuda()
+# @app.route("/numero_ongs", methods=["GET"])
+def numero_ongs():
+
+    with get_conexao() as con:
+        with con.cursor() as cur:
+            cur.execute("SELECT count(*) FROM gs_empresa")
+            contagem = cur.fetchone()[0]
+    
+    print(contagem)
 
 
-app.run(debug=True)
+numero_ongs()
+
+
+# app.run(debug=True)
