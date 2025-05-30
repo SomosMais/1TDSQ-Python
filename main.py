@@ -36,7 +36,7 @@ def cadastro_ajuda():
 
     insercao = request.get_json()
     
-    if not insercao.get("descricao") or not insercao.get("urgencia") or not insercao.get("id_usuario") or not insercao.get("id_empresa") or not insercao.get("id_status") or not insercao.get("tipo"):
+    if not insercao.get("descricao") or not insercao.get("urgencia") or not insercao.get("email_usuario") or not insercao.get("tipo"):
         info = {"msg": "Não foi encontrada uma das informações necessárias", "status": 406}
         return (info, 406)
     
@@ -44,27 +44,22 @@ def cadastro_ajuda():
     descricao = insercao["descricao"]
     urgente_pedido = insercao["urgencia"]
     tipo = insercao["tipo"]
-    usuario = insercao["id_usuario"]
+    usuario = insercao["email_usuario"]
 
     with get_conexao() as con:
         with con.cursor() as cur:
-            cur.execute(f"INSERT INTO GS_Pedido_Ajuda (descricao, data_criacao, urgente_pedido, id_usuario, id_empresa, id_status, id_tipo_pedido) VALUES (:1, :2, :3, :4, 1, 1, :5)", (descricao, data_atual, urgente_pedido, usuario, tipo))
+            cur.execute(f"SELECT id_usuario FROM gs_usuario WHERE email_usuario = '{usuario}'")
+            captura_id_usuario = cur.fetchone()
+    
+    id_usuario = captura_id_usuario[0]
+
+    with get_conexao() as con:
+        with con.cursor() as cur:
+            cur.execute(f"INSERT INTO GS_Pedido_Ajuda (descricao, data_criacao, urgente_pedido, id_usuario, id_empresa, id_status, id_tipo_pedido) VALUES (:1, :2, :3, :4, 1, 1, :5)", (descricao, data_atual, urgente_pedido, id_usuario, tipo))
             con.commit()
     
     info = {"msg": "Pedido recebido", "status": 201}
     return jsonify(info), 201
-
-
-    # Exemplo de dicionário
-
-    # {
-    # "descricao": "[descricao]",
-    # "urgencia": "[S ou N]",
-    # "id_usuario": [id do usuario logado],
-    # "id_empresa": [1, nenhuma empresa aceitou ainda],
-    # "id_status": [1, sempre vai entrar como pendente],
-    # "tipo": [de 1 a 13]
-    # }
 
 
 @app.route("/mostrar_usuarios", methods=["GET"])

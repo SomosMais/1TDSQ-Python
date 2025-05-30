@@ -88,4 +88,39 @@ def atualizar_pedido():
 
 
 
-cancelar_pedido()
+# @app.route("/cadastro_pedido_ajuda", methods=["POST"])
+def cadastro_ajuda():
+
+    # mudar de id_usuario/empresa para email
+
+    # insercao = request.get_json()
+    
+    # if not insercao.get("descricao") or not insercao.get("urgencia") or not insercao.get("email_usuario") or not insercao.get("tipo"):
+    #     info = {"msg": "Não foi encontrada uma das informações necessárias", "status": 406}
+    #     return (info, 406)
+    
+    # data_atual = date.today()
+    # descricao = insercao["descricao"]
+    # urgente_pedido = insercao["urgencia"]
+    # tipo = insercao["tipo"]
+    # usuario = insercao["email_usuario"]
+
+    with get_conexao() as con:
+        with con.cursor() as cur:
+            cur.execute(f"SELECT id_usuario FROM gs_usuario WHERE email_usuario = 'cleyton777@gmail.com'")
+            captura_id_usuario = cur.fetchone()
+    
+    id_usuario = captura_id_usuario
+
+    print(id_usuario)
+
+    # with get_conexao() as con:
+    #     with con.cursor() as cur:
+    #         cur.execute(f"INSERT INTO GS_Pedido_Ajuda (descricao, data_criacao, urgente_pedido, id_usuario, id_empresa, id_status, id_tipo_pedido) VALUES (:1, :2, :3, :4, 1, 1, :5)", (descricao, data_atual, urgente_pedido, id_usuario, tipo))
+    #         con.commit()
+    
+    # info = {"msg": "Pedido recebido", "status": 201}
+    # return jsonify(info), 201
+
+
+cadastro_ajuda()
