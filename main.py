@@ -309,7 +309,7 @@ def aceitar_pedido(email_empresa, id_pedido: int):
 
 @app.route("/visualizar_pedidos", methods=["POST"])
 def visualizar_pedidos():
-    
+    # falta retornar só os pedidos pendentes
     insercao = request.get_json()
 
     if not insercao:
@@ -323,7 +323,7 @@ def visualizar_pedidos():
     if insercao.get("urgencia"):
         with get_conexao() as con:
             with con.cursor() as cur:
-                cur.execute(f"SELECT p.id_pedido, p.descricao, p.data_criacao, p.urgente_pedido, p.id_tipo_pedido, u.nome_usuario, e.logradouro, e.numero, e.bairro, e.cidade, e.estado, e.cep FROM GS_Pedido_Ajuda p JOIN GS_Usuario u ON p.id_usuario = u.id_usuario LEFT JOIN GS_Endereco e ON u.id_endereco = e.id_endereco WHERE urgente_pedido = '{insercao["urgencia"]}' ORDER BY id_pedido")
+                cur.execute(f"SELECT p.id_pedido, p.descricao, p.data_criacao, p.urgente_pedido, p.id_tipo_pedido, u.nome_usuario, e.logradouro, e.numero, e.bairro, e.cidade, e.estado, e.cep FROM GS_Pedido_Ajuda p JOIN GS_Usuario u ON p.id_usuario = u.id_usuario LEFT JOIN GS_Endereco e ON u.id_endereco = e.id_endereco WHERE urgente_pedido = '{insercao["urgencia"]}' AND id_tipo_pedido = 1 ORDER BY id_pedido")
                 captura = cur.fetchall()
         
         lista_pedidos = []
@@ -350,7 +350,7 @@ def visualizar_pedidos():
     elif insercao.get("tipo"):
         with get_conexao() as con:
             with con.cursor() as cur:
-                cur.execute(f"SELECT p.id_pedido, p.descricao, p.data_criacao, p.urgente_pedido, p.id_tipo_pedido, u.nome_usuario, e.logradouro, e.numero, e.bairro, e.cidade, e.estado, e.cep FROM GS_Pedido_Ajuda p JOIN GS_Usuario u ON p.id_usuario = u.id_usuario LEFT JOIN GS_Endereco e ON u.id_endereco = e.id_endereco WHERE id_tipo_pedido = {insercao["tipo"]} ORDER BY id_pedido")
+                cur.execute(f"SELECT p.id_pedido, p.descricao, p.data_criacao, p.urgente_pedido, p.id_tipo_pedido, u.nome_usuario, e.logradouro, e.numero, e.bairro, e.cidade, e.estado, e.cep FROM GS_Pedido_Ajuda p JOIN GS_Usuario u ON p.id_usuario = u.id_usuario LEFT JOIN GS_Endereco e ON u.id_endereco = e.id_endereco WHERE id_tipo_pedido = {insercao["tipo"]} AND id_tipo_pedido = 1 ORDER BY id_pedido")
                 captura = cur.fetchall()
             
         lista_pedidos = []
@@ -376,11 +376,6 @@ def visualizar_pedidos():
     elif not insercao.get("urgencia") and not insercao.get("tipo"):
         info = {"msg": "Não foi encontrado nenhum filtro", "Status": 406}
         return (info, 406)
-
-
-# id pedido, descrição, data criacão, urgencia, id tipo do pedido, nome da pessoa e endereço
-    
-    
 
 
 app.run(debug=True)
