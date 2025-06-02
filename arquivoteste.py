@@ -138,29 +138,40 @@ def numero_ongs():
 
 
 def funcaodetestedasilva(email_empresa):
-    with get_conexao() as con:
-        with con.cursor() as cur:
-            cur.execute("SELECT id_pedido FROM GS_Pedido_Ajuda")
-            captura_pedidos = cur.fetchall()
-            cur.execute(f"SELECT id_empresa FROM GS_Empresa WHERE email_empresa = '{email_empresa}'")
-            captura_id_empresa = cur.fetchone()
 
-    if captura_id_empresa == None:
-        print("fbvojwoefneobnwefni")
+    insercao = {"urgencia": "S"}
 
-    print(captura_id_empresa)
-    
-    # lista_id_empresas = []
-    # lista_id_pedidos = []
+    if insercao.get("urgencia"):
+        with get_conexao() as con:
+            with con.cursor() as cur:
+                cur.execute(f"SELECT p.id_pedido, p.descricao, p.data_criacao, p.urgente_pedido, p.id_tipo_pedido, u.nome_usuario, e.logradouro, e.numero, e.bairro, e.cidade, e.estado, e.cep FROM GS_Pedido_Ajuda p JOIN GS_Usuario u ON p.id_usuario = u.id_usuario LEFT JOIN GS_Endereco e ON u.id_endereco = e.id_endereco WHERE urgente_pedido = '{insercao["urgencia"]}' ORDER BY id_pedido")
+                captura = cur.fetchall()
+        
+        lista_pedidos = []
 
-    # for tuplas in captura_empresas:
-    #     lista_id_empresas.append(tuplas[0])
+        for i in captura:
+            id_pedido = i[0]
+            descricao = i[1]
+            data_criacao = i[2].strftime('%d-%m-%y')
+            urgencia = i[3]
+            id_tipo_pedido = i[4]
+            nome_usuario = i[5]
+            logradouro = i[6]
+            numero = i[7]
+            bairro = i[8]
+            cidade = i[9]
+            estado = i[10]
+            cep = i[11]
+
+            lista_pedidos.append({"id_pedido": id_pedido, "descricao": descricao, "data criacao": data_criacao, "urgencia": urgencia, "id tipo pedido": id_tipo_pedido, "nome do usuario": nome_usuario, "endereco do usuario": [logradouro, numero, bairro, cidade, estado, cep]})
+        
+    for i in lista_pedidos:
+        print(i)
+
+
+
     
-    # for tuplas in captura_pedidos:
-    #     lista_id_pedidos.append(tuplas[0])
     
-    # print(lista_id_empresas)
-    # print(lista_id_pedidos)
 
 
 

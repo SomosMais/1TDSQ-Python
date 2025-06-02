@@ -307,9 +307,80 @@ def aceitar_pedido(email_empresa, id_pedido: int):
         return (info, 406)
 
 
-@app.route("/visualizar_pedidos", methods=["GET"])
+@app.route("/visualizar_pedidos", methods=["POST"])
 def visualizar_pedidos():
-    pass
+    
+    insercao = request.get_json()
+
+    if not insercao:
+        info = {"msg": "Nenhum filtro aplicado", "Status": 406}
+        return (info, 406)
+
+    if len(insercao) > 1 or len(insercao) < 1:
+        info = {"msg": "Mais ou menos de um filtro aplicado", "Status": 406}
+        return (info, 406)
+    
+    if insercao.get("urgencia"):
+        with get_conexao() as con:
+            with con.cursor() as cur:
+                cur.execute(f"SELECT p.id_pedido, p.descricao, p.data_criacao, p.urgente_pedido, p.id_tipo_pedido, u.nome_usuario, e.logradouro, e.numero, e.bairro, e.cidade, e.estado, e.cep FROM GS_Pedido_Ajuda p JOIN GS_Usuario u ON p.id_usuario = u.id_usuario LEFT JOIN GS_Endereco e ON u.id_endereco = e.id_endereco WHERE urgente_pedido = '{insercao["urgencia"]}' ORDER BY id_pedido")
+                captura = cur.fetchall()
+        
+        lista_pedidos = []
+
+        for i in captura:
+            id_pedido = i[0]
+            descricao = i[1]
+            data_criacao = i[2].strftime('%d-%m-%y')
+            urgencia = i[3]
+            id_tipo_pedido = i[4]
+            nome_usuario = i[5]
+            logradouro = i[6]
+            numero = i[7]
+            bairro = i[8]
+            cidade = i[9]
+            estado = i[10]
+            cep = i[11]
+
+            lista_pedidos.append({"id_pedido": id_pedido, "descricao": descricao, "data criacao": data_criacao, "urgencia": urgencia, "id tipo pedido": id_tipo_pedido, "nome do usuario": nome_usuario, "endereco do usuario": [logradouro, numero, bairro, cidade, estado, cep]})
+        
+        return(jsonify(lista_pedidos), 200)
+    
+
+    elif insercao.get("tipo"):
+        with get_conexao() as con:
+            with con.cursor() as cur:
+                cur.execute(f"SELECT p.id_pedido, p.descricao, p.data_criacao, p.urgente_pedido, p.id_tipo_pedido, u.nome_usuario, e.logradouro, e.numero, e.bairro, e.cidade, e.estado, e.cep FROM GS_Pedido_Ajuda p JOIN GS_Usuario u ON p.id_usuario = u.id_usuario LEFT JOIN GS_Endereco e ON u.id_endereco = e.id_endereco WHERE id_tipo_pedido = {insercao["tipo"]} ORDER BY id_pedido")
+                captura = cur.fetchall()
+            
+        lista_pedidos = []
+
+        for i in captura:
+            id_pedido = i[0]
+            descricao = i[1]
+            data_criacao = i[2].strftime('%d-%m-%y')
+            urgencia = i[3]
+            id_tipo_pedido = i[4]
+            nome_usuario = i[5]
+            logradouro = i[6]
+            numero = i[7]
+            bairro = i[8]
+            cidade = i[9]
+            estado = i[10]
+            cep = i[11]
+
+            lista_pedidos.append({"id_pedido": id_pedido, "descricao": descricao, "data criacao": data_criacao, "urgencia": urgencia, "id tipo pedido": id_tipo_pedido, "nome do usuario": nome_usuario, "endereco do usuario": [logradouro, numero, bairro, cidade, estado, cep]})
+        
+        return(jsonify(lista_pedidos), 200)
+    
+    elif not insercao.get("urgencia") and not insercao.get("tipo"):
+        info = {"msg": "Não foi encontrado nenhum filtro", "Status": 406}
+        return (info, 406)
+
+
+# id pedido, descrição, data criacão, urgencia, id tipo do pedido, nome da pessoa e endereço
+    
+    
 
 
 app.run(debug=True)
