@@ -173,7 +173,7 @@ def status_pedido(id: int):
 @app.route("/historico/cliente/<email>", methods=["GET"])
 def historico_pedido(email):
 
-    data_aceitacao = None
+    # data_aceitacao = None
 
     with get_conexao() as con:
         with con.cursor() as cur:
@@ -189,8 +189,10 @@ def historico_pedido(email):
         descricao = pedidos[3]
         data_criacao = pedidos[4].strftime('%d-%m-%y') # data_criacao
             
-        if data_aceitacao:
-            data_aceitacao = pedidos[5].strftime('%d-%m-%y') # data_aceitacao
+        if pedidos[5]:
+            data_aceitacao = pedidos[5].strftime('%d-%m-%y')
+        else:
+            data_aceitacao = None
         
         urgente = pedidos[6]
         status = pedidos[7]
