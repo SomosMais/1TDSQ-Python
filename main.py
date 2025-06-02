@@ -170,10 +170,13 @@ def status_pedido(id: int):
         return (info, 406)
 
 
+@app.route("/historico/empresa/<email>", methods=["GET"])
+def historico_pedido(email):
+    pass
+
+
 @app.route("/historico/cliente/<email>", methods=["GET"])
 def historico_pedido(email):
-
-    # data_aceitacao = None
 
     with get_conexao() as con:
         with con.cursor() as cur:
