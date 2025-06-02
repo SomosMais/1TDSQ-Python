@@ -22,10 +22,12 @@
 
 
 from flask import Flask, jsonify, request
+from flask_cors import CORS
 from datetime import date
 import oracledb
 
 app = Flask(__name__)
+CORS(app)
 
 
 def get_conexao():
@@ -267,9 +269,21 @@ def atualizar_pedido(id: int):
     #         cur.execute("")
 
 
-@app.route("/aceitar_pedido", methods=['GET'])
-def aceitar_pedido():
-    pass
+@app.route("/aceitar_pedido/<int:id_empresa>/<int:id_pedido>", methods=["GET"])
+def aceitar_pedido(id_empresa: int, id_pedido: int):
+
+    data_atual = date.today()
+
+    with get_conexao() as con:
+        with con.cursor() as cur:
+            cur.execute("UPDATE GS_Pedido_Ajuda SET id_empresa = :1, data_aceitacao = :2, id_status = 2 WHERE id_pedido = :3", (id_empresa, data_atual, id_pedido))
+            con.commit()
+    
+    info = {"msg": "Pedido aceito com sucesso!", "Status": 200}
+    return (info, 200)
+    
+    # UPDATE nome_da_tabela SET nome_da_coluna = novo_valor, outra_coluna = outro_valor WHERE condicao;
+
 
 
 @app.route("/visualizar_pedidos", methods=["GET"])
