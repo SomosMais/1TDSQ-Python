@@ -136,7 +136,66 @@ def numero_ongs():
     print(contagem)
 
 
-numero_ongs()
+
+def funcaodetestedasilva(email_empresa):
+    with get_conexao() as con:
+        with con.cursor() as cur:
+            cur.execute("SELECT id_pedido FROM GS_Pedido_Ajuda")
+            captura_pedidos = cur.fetchall()
+            cur.execute(f"SELECT id_empresa FROM GS_Empresa WHERE email_empresa = '{email_empresa}'")
+            captura_id_empresa = cur.fetchone()
+
+    if captura_id_empresa == None:
+        print("fbvojwoefneobnwefni")
+
+    print(captura_id_empresa)
+    
+    # lista_id_empresas = []
+    # lista_id_pedidos = []
+
+    # for tuplas in captura_empresas:
+    #     lista_id_empresas.append(tuplas[0])
+    
+    # for tuplas in captura_pedidos:
+    #     lista_id_pedidos.append(tuplas[0])
+    
+    # print(lista_id_empresas)
+    # print(lista_id_pedidos)
+
+
+
+# @app.route("/aceitar_pedido/<email_empresa>/<int:id_pedido>", methods=["GET"])
+def aceitar_pedido(email_empresa, id_pedido: int):
+
+    data_atual = date.today()
+
+    with get_conexao() as con:
+        with con.cursor() as cur:
+            cur.execute("SELECT id_pedido FROM GS_Pedido_Ajuda")
+            captura_pedidos = cur.fetchall()
+            cur.execute(f"SELECT id_empresa FROM GS_Empresa WHERE email_empresa = {email_empresa}")
+            captura_id_empresa = cur.fetchone()
+    
+    lista_id_pedidos = []
+    
+    for tuplas in captura_pedidos:
+        lista_id_pedidos.append(tuplas[0])
+
+    if id_pedido in lista_id_pedidos:
+        with get_conexao() as con:
+            with con.cursor() as cur:
+                cur.execute("UPDATE GS_Pedido_Ajuda SET id_empresa = :1, data_aceitacao = :2, id_status = 2 WHERE id_pedido = :3", (id_empresa, data_atual, id_pedido))
+                con.commit()
+        
+        info = {"msg": "Pedido aceito com sucesso!", "Status": 200}
+        return (info, 200)
+    else:
+        info = {"msg": "id de empresa ou id de pedido inexistente", "Status": 406}
+        return (info, 406)
+
+
+funcaodetestedasilva("solu153@gmail.com")
+
 
 
 # app.run(debug=True)

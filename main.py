@@ -271,21 +271,40 @@ def atualizar_pedido(id: int):
     #         cur.execute("")
 
 
-@app.route("/aceitar_pedido/<int:id_empresa>/<int:id_pedido>", methods=["GET"])
-def aceitar_pedido(id_empresa: int, id_pedido: int):
+@app.route("/aceitar_pedido/<email_empresa>/<int:id_pedido>", methods=["GET"])
+def aceitar_pedido(email_empresa, id_pedido: int):
 
     data_atual = date.today()
 
     with get_conexao() as con:
         with con.cursor() as cur:
-            cur.execute("UPDATE GS_Pedido_Ajuda SET id_empresa = :1, data_aceitacao = :2, id_status = 2 WHERE id_pedido = :3", (id_empresa, data_atual, id_pedido))
-            con.commit()
-    
-    info = {"msg": "Pedido aceito com sucesso!", "Status": 200}
-    return (info, 200)
-    
-    # UPDATE nome_da_tabela SET nome_da_coluna = novo_valor, outra_coluna = outro_valor WHERE condicao;
 
+            cur.execute(f"SELECT id_empresa FROM GS_Empresa WHERE email_empresa = '{email_empresa}'")
+            captura_id_empresa = cur.fetchone()
+            
+            cur.execute("SELECT id_pedido FROM GS_Pedido_Ajuda")
+            captura_pedidos = cur.fetchall()
+    
+    if captura_id_empresa == None:
+        info = {"msg": "Empresa inexistente", "Status": 406}
+        return (info, 406)
+    
+    lista_id_pedidos = []
+
+    for tuplas in captura_pedidos:
+        lista_id_pedidos.append(tuplas[0])
+
+    if id_pedido in lista_id_pedidos:
+        with get_conexao() as con:
+            with con.cursor() as cur:
+                cur.execute("UPDATE GS_Pedido_Ajuda SET id_empresa = :1, data_aceitacao = :2, id_status = 2 WHERE id_pedido = :3", (captura_id_empresa[0], data_atual, id_pedido))
+                con.commit()
+        
+        info = {"msg": "Pedido aceito com sucesso!", "Status": 200}
+        return (info, 200)
+    else:
+        info = {"msg": "Pedido inexistente", "Status": 406}
+        return (info, 406)
 
 
 @app.route("/visualizar_pedidos", methods=["GET"])
