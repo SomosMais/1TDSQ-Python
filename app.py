@@ -52,14 +52,14 @@ def cadastro_ajuda():
 
     with get_conexao() as con:
         with con.cursor() as cur:
-            cur.execute(f"SELECT id_usuario FROM gs_usuario WHERE email_usuario = '{usuario}'")
+            cur.execute("SELECT id_usuario FROM gs_usuario WHERE email_usuario = :1", (usuario,))
             captura_id_usuario = cur.fetchone()
     
     id_usuario = captura_id_usuario[0]
 
     with get_conexao() as con:
         with con.cursor() as cur:
-            cur.execute(f"INSERT INTO GS_Pedido_Ajuda (descricao, data_criacao, urgente_pedido, id_usuario, id_empresa, id_status, id_tipo_pedido) VALUES (:1, :2, :3, :4, 1, 1, :5)", (descricao, data_atual, urgente_pedido, id_usuario, tipo))
+            cur.execute("INSERT INTO GS_Pedido_Ajuda (descricao, data_criacao, urgente_pedido, id_usuario, id_empresa, id_status, id_tipo_pedido) VALUES (:1, :2, :3, :4, 1, 1, :5)", (descricao, data_atual, urgente_pedido, id_usuario, tipo))
             con.commit()
     
     info = {"msg": "Pedido recebido", "status": 201}
@@ -159,7 +159,7 @@ def status_pedido(id: int):
     try: 
         with get_conexao() as con:
             with con.cursor() as cur:
-                cur.execute(f"SELECT p.id_pedido, p.descricao, s.nome_status FROM GS_Pedido_Ajuda p JOIN GS_Status s ON p.id_status = s.id_status WHERE id_pedido = {id}")
+                cur.execute("SELECT p.id_pedido, p.descricao, s.nome_status FROM GS_Pedido_Ajuda p JOIN GS_Status s ON p.id_status = s.id_status WHERE id_pedido = :1", (id,))
                 captura = cur.fetchone()
 
         pedido = {"id": captura[0], "Descricao": captura[1], "Status": captura[2]}
@@ -221,9 +221,13 @@ def historico_pedido_usuario(email):
 
     with get_conexao() as con:
         with con.cursor() as cur:
-            cur.execute(f"SELECT u.nome_usuario, u.id_usuario, p.id_pedido, p.descricao, p.data_criacao, p.data_aceitacao, p.urgente_pedido, s.nome_status, t.tipo_pedido FROM GS_Pedido_Ajuda p JOIN GS_Usuario u ON p.id_usuario = u.id_usuario LEFT JOIN GS_Status s ON p.id_status = s.id_status LEFT JOIN GS_Tipo_Pedido t ON p.id_tipo_pedido = t.id_tipo_pedido WHERE u.email_usuario = '{email}' ORDER BY p.data_criacao")
+            cur.execute("SELECT u.nome_usuario, u.id_usuario, p.id_pedido, p.descricao, p.data_criacao, p.data_aceitacao, p.urgente_pedido, s.nome_status, t.tipo_pedido FROM GS_Pedido_Ajuda p JOIN GS_Usuario u ON p.id_usuario = u.id_usuario LEFT JOIN GS_Status s ON p.id_status = s.id_status LEFT JOIN GS_Tipo_Pedido t ON p.id_tipo_pedido = t.id_tipo_pedido WHERE u.email_usuario = :1 ORDER BY p.data_criacao", (email,))
             captura = cur.fetchall()
     
+    if not captura:
+        info = {"msg": f"Não existe usuário com o email {email}", "status": 406}
+        return (info, 406)
+
     lista_pedido = []
 
     for pedidos in captura:
@@ -232,12 +236,12 @@ def historico_pedido_usuario(email):
         id_pedido = pedidos[2]
         descricao = pedidos[3]
         data_criacao = pedidos[4].strftime('%d-%m-%y') # data_criacao
-            
+                
         if pedidos[5]:
             data_aceitacao = pedidos[5].strftime('%d-%m-%y')
         else:
             data_aceitacao = None
-        
+            
         urgente = pedidos[6]
         status = pedidos[7]
         tipo_pedido = pedidos[8]
@@ -247,16 +251,16 @@ def historico_pedido_usuario(email):
     if len(lista_pedido) >= 1:
         return (jsonify(lista_pedido), 200)
     else:
-       info = {"msg": f"Não existe usuário com o email {email}", "status": 406}
-       return (info, 406) 
-    
+        info = {"msg": "Nenhum pedido feito por esse usuário", "status": 200}
+        return (info, 200)
 
+    
 @app.route("/cancelar_pedido/<int:id>", methods=["GET"])
 def cancelar_pedido(id: int):
 
     with get_conexao() as con:
         with con.cursor() as cur:
-            cur.execute(f"DELETE FROM GS_Pedido_Ajuda WHERE id_pedido = {id}")
+            cur.execute("DELETE FROM GS_Pedido_Ajuda WHERE id_pedido = :1", (id,))
             linhas_afetadas = cur.rowcount
             con.commit()
         
@@ -314,7 +318,7 @@ def aceitar_pedido(email_empresa, id_pedido: int):
     with get_conexao() as con:
         with con.cursor() as cur:
 
-            cur.execute(f"SELECT id_empresa FROM GS_Empresa WHERE email_empresa = '{email_empresa}'")
+            cur.execute("SELECT id_empresa FROM GS_Empresa WHERE email_empresa = :1", (email_empresa,))
             captura_id_empresa = cur.fetchone()
             
             cur.execute("SELECT id_pedido FROM GS_Pedido_Ajuda")
@@ -358,7 +362,7 @@ def visualizar_pedidos():
     if insercao.get("urgencia"):
         with get_conexao() as con:
             with con.cursor() as cur:
-                cur.execute(f"SELECT p.id_pedido, p.descricao, p.data_criacao, p.urgente_pedido, p.id_tipo_pedido, u.nome_usuario, e.logradouro, e.numero, e.bairro, e.cidade, e.estado, e.cep FROM GS_Pedido_Ajuda p JOIN GS_Usuario u ON p.id_usuario = u.id_usuario LEFT JOIN GS_Endereco e ON u.id_endereco = e.id_endereco WHERE urgente_pedido = '{insercao["urgencia"]}' AND id_tipo_pedido = 1 ORDER BY id_pedido")
+                cur.execute("SELECT p.id_pedido, p.descricao, p.data_criacao, p.urgente_pedido, p.id_tipo_pedido, u.nome_usuario, e.logradouro, e.numero, e.bairro, e.cidade, e.estado, e.cep FROM GS_Pedido_Ajuda p JOIN GS_Usuario u ON p.id_usuario = u.id_usuario LEFT JOIN GS_Endereco e ON u.id_endereco = e.id_endereco WHERE urgente_pedido = :1 ORDER BY id_pedido", (insercao["urgencia"],))
                 captura = cur.fetchall()
         
         lista_pedidos = []
@@ -385,7 +389,7 @@ def visualizar_pedidos():
     elif insercao.get("tipo"):
         with get_conexao() as con:
             with con.cursor() as cur:
-                cur.execute(f"SELECT p.id_pedido, p.descricao, p.data_criacao, p.urgente_pedido, p.id_tipo_pedido, u.nome_usuario, e.logradouro, e.numero, e.bairro, e.cidade, e.estado, e.cep FROM GS_Pedido_Ajuda p JOIN GS_Usuario u ON p.id_usuario = u.id_usuario LEFT JOIN GS_Endereco e ON u.id_endereco = e.id_endereco WHERE id_tipo_pedido = {insercao["tipo"]} AND id_tipo_pedido = 1 ORDER BY id_pedido")
+                cur.execute("SELECT p.id_pedido, p.descricao, p.data_criacao, p.urgente_pedido, p.id_tipo_pedido, u.nome_usuario, e.logradouro, e.numero, e.bairro, e.cidade, e.estado, e.cep FROM GS_Pedido_Ajuda p JOIN GS_Usuario u ON p.id_usuario = u.id_usuario LEFT JOIN GS_Endereco e ON u.id_endereco = e.id_endereco WHERE id_tipo_pedido = :1 ORDER BY id_pedido", (insercao["tipo"],))
                 captura = cur.fetchall()
             
         lista_pedidos = []
