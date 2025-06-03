@@ -294,7 +294,7 @@ def atualizar_pedido(id: int):
     if insercao.get("tipo"):
         with get_conexao() as con:
             with con.cursor() as cur:
-                cur.execute("UPDATE Gs_Pedido_Ajuda SET id_tipo_pedido = :1 WHERE id_pedido = :2", (insercao["tipo"], id))
+                cur.execute("UPDATE GS_Pedido_Ajuda SET id_tipo_pedido = :1 WHERE id_pedido = :2", (insercao["tipo"], id))
                 linhas_afetadas = cur.rowcount
                 con.commit()
         
