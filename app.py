@@ -1,26 +1,3 @@
-# 👤 USUÁRIO (Afetado)
-# •    ✅ Cadastro de pedido de ajuda
-# •    ✅ Mostrando quantas ONGs
-# •    ✅ Visualização de status do pedido (Pendente, Em andamento, Concluído).
-# •    ✅ Histórico de pedidos anteriores
-# •    ✅ Cancelar ou atualizar pedido
-# API de todos os clientes
-# número de ongs
-# número de pedidos concluídos
-
-
-# •    ✅ Gráficos sobre enchentes
-
-
-
-# 🏥 ONG (ou admin)
-# •    ✅ Aceitar pedido
-# •    ✅ Visualizar todos os pedidos abertos (com filtros: tipo, urgência, local)
-
-# •    ✅ Gráficos e estatísticas por tipo de pedido, localização e status
-
-
-
 from flask import Flask, jsonify, request
 from flask_cors import CORS
 from datetime import date
