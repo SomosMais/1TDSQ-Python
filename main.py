@@ -173,39 +173,45 @@ def status_pedido(id: int):
 @app.route("/historico/empresa/<email>", methods=["GET"])
 def historico_pedido_empresa(email):
 
-    with get_conexao() as con:
-        with con.cursor() as cur:
-            cur.execute("SELECT id_empresa FROM GS_Empresa WHERE email_empresa = :1", (email,))
-            id_empresa = cur.fetchone()[0]
+    try:
+        with get_conexao() as con:
+            with con.cursor() as cur:
+                cur.execute("SELECT id_empresa FROM GS_Empresa WHERE email_empresa = :1", (email,))
+                id_empresa = cur.fetchone()[0]
+        
+        with get_conexao() as con:
+            with con.cursor() as cur:
+                cur.execute("SELECT p.id_pedido, p.descricao, p.data_criacao, p.data_aceitacao, p.urgente_pedido, u.nome_usuario, e.logradouro, e.numero, e.bairro, e.cidade, e.estado, e.cep, p.id_tipo_pedido FROM GS_Pedido_Ajuda p JOIN GS_Usuario u ON p.id_usuario = u.id_usuario LEFT JOIN GS_Endereco e ON u.id_endereco = e.id_endereco WHERE p.id_empresa = :1", (id_empresa,))
+                captura_banco = cur.fetchall()
+        
+        lista_pedido = []
+
     
-    with get_conexao() as con:
-        with con.cursor() as cur:
-            cur.execute("SELECT p.id_pedido, p.descricao, p.data_criacao, p.data_aceitacao, p.urgente_pedido, u.nome_usuario, e.logradouro, e.numero, e.bairro, e.cidade, e.estado, e.cep, p.id_tipo_pedido FROM GS_Pedido_Ajuda p JOIN GS_Usuario u ON p.id_usuario = u.id_usuario LEFT JOIN GS_Endereco e ON u.id_endereco = e.id_endereco WHERE p.id_empresa = :1", (id_empresa,))
-            captura_banco = cur.fetchall()
+        for pedidos in captura_banco:
+            id_pedido = pedidos[0]
+            descricao = pedidos[1]
+            data_criacao = pedidos[2].strftime('%d-%m-%y')
+            data_aceitacao = pedidos[3].strftime('%d-%m-%y')
+            urgente = pedidos[4]
+            nome_usuario = pedidos[5]
+            logradouro = pedidos[6]
+            numero = pedidos[7]
+            bairro = pedidos[8]
+            cidade = pedidos[9]
+            estado = pedidos[10]
+            cep = pedidos[11]
+            tipo_pedido = pedidos[12]
+
+            lista_pedido.append({"id_pedido": id_pedido, "descricao": descricao, "data criacao": data_criacao, "data aceitacao": data_aceitacao, "urgente": urgente, "nome usuario": nome_usuario, "endereco usuario": [logradouro, numero, bairro, cidade, estado, cep], "tipo pedido": tipo_pedido})
+
+        if len(lista_pedido) >= 1:
+            return (jsonify(lista_pedido), 200)
+        else:
+            info = {"msg": "Nenhum pedido foi encontrado", "Status": 200}
+            return (info, 200)
     
-    lista_pedido = []
-
-    for pedidos in captura_banco:
-        id_pedido = pedidos[0]
-        descricao = pedidos[1]
-        data_criacao = pedidos[2].strftime('%d-%m-%y')
-        data_aceitacao = pedidos[3].strftime('%d-%m-%y')
-        urgente = pedidos[4]
-        nome_usuario = pedidos[5]
-        logradouro = pedidos[6]
-        numero = pedidos[7]
-        bairro = pedidos[8]
-        cidade = pedidos[9]
-        estado = pedidos[10]
-        cep = pedidos[11]
-        tipo_pedido = pedidos[12]
-
-        lista_pedido.append({"id_pedido": id_pedido, "descricao": descricao, "data criacao": data_criacao, "data aceitacao": data_aceitacao, "urgente": urgente, "nome usuario": nome_usuario, "endereco usuario": [logradouro, numero, bairro, cidade, estado, cep], "tipo pedido": tipo_pedido})
-
-    if len(lista_pedido) >= 1:
-        return (jsonify(lista_pedido), 200)
-    else:
-        info = {"msg": f"Não existe empresa com o email {email}", "Status": 406}
+    except TypeError:
+        info = {"msg": f"Nenhuma empresa com o email {email}", "Status": 406}
         return (info, 406)
 
 
