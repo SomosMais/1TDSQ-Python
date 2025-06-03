@@ -54,7 +54,6 @@ def menu(id_usuario):
         historico(id_usuario)
 
 
-
 def cadastrar_pedido(id_usuario):
 
     while True:
@@ -105,7 +104,22 @@ def cadastrar_pedido(id_usuario):
 
 
 def atualizar_pedido(id_usuario):
-    print("atualizar")
+    
+    with get_conexao() as con:
+        with con.cursor() as cur:
+            cur.execute("SELECT u.nome_usuario, p.id_pedido FROM GS_Pedido_Ajuda p JOIN GS_Usuario u ON p.id_usuario = u.id_usuario LEFT JOIN GS_Status s ON p.id_status = s.id_status LEFT JOIN GS_Tipo_Pedido t ON p.id_tipo_pedido = t.id_tipo_pedido WHERE u.id_usuario = :1 ORDER BY p.data_criacao", (id_usuario,))
+            captura_pedidos = cur.fetchall()
+    
+    lista_verificacao = []
+
+    print("\nQual pedido você deseja alterar?")
+    for tuplas in captura_pedidos:
+        print(f"Pedido - ID: {tuplas[1]}")
+        lista_verificacao.append(tuplas[1])
+    
+    print(lista_verificacao)
+
+    
 
 
 def cancelar_pedido(id_usuario):
