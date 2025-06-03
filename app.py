@@ -25,6 +25,7 @@ from flask import Flask, jsonify, request
 from flask_cors import CORS
 from datetime import date
 import oracledb
+import os
 
 app = Flask(__name__)
 CORS(app)
@@ -413,3 +414,7 @@ def visualizar_pedidos():
 
 
 app.run(debug=True)
+
+if __name__ == "main":
+    port = int(os.environ.get('PORT', 5000))
+    app.run(host='0.0.0.0', port=port)
