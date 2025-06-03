@@ -303,15 +303,6 @@ def atualizar_pedido(id: int):
     else:
         info = {"msg": f"Não existe pedido com o id {id}", "status": 406}
         return (info, 406)    
-    
-
-    
-    # UPDATE clientes SET nome = 'Maria Silva', telefone = '99999-8888' WHERE id = 3;
-
-
-    # with get_conexao() as con:
-    #     with con.cursor() as cur:
-    #         cur.execute("")
 
 
 @app.route("/aceitar_pedido/<email_empresa>/<int:id_pedido>", methods=["GET"])
