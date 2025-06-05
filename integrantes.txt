@@ -1,0 +1,5 @@
+| NOME                                   | RM     | TURMA |
+| -------------------------------------- | ------ | ----- |
+| Cleyton Enrike de Oliveira             | 560485 | 1TDSQ |
+| Pedro Henrique de Souza Sena           | 561178 | 1TDSQ |
+| Matheus Henrique Nascimento de Freitas | 560442 | 1TDSQ |

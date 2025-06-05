@@ -309,7 +309,7 @@ LEFT JOIN
 LEFT JOIN 
     GS_Tipo_Pedido t ON p.id_tipo_pedido = t.id_tipo_pedido
 ORDER BY 
-    p.data_criacao
+    p.data_criacao;
 
     
 
@@ -377,7 +377,7 @@ SELECT
 FROM GS_Pedido_Ajuda p
 JOIN GS_Usuario u ON p.id_usuario = u.id_usuario
 LEFT JOIN GS_Endereco e ON u.id_endereco = e.id_endereco
-ORDER BY id_pedido
+ORDER BY id_pedido;
 
 
 -- Pedidos com endereço completo do usuario com base no id da empresa que aceitou --
@@ -402,7 +402,7 @@ JOIN
 LEFT JOIN
     GS_Endereco e ON u.id_endereco = e.id_endereco
 WHERE
-    p.id_empresa = 22
+    p.id_empresa = 2
 
 
 -- Nome do usuário e id de seus pedidos --
@@ -417,7 +417,7 @@ FROM
 WHERE
     u.id_usuario = 1
 ORDER BY
-    p.data_criacao
+    p.data_criacao;
     
 
 -- Excluir --

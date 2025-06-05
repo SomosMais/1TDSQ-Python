@@ -2,7 +2,6 @@ import oracledb
 import json as js
 from datetime import date
 
-# para usuario: cadastrar pedido, atualizar um pedido, cancelar pedido e ver historico
 
 def get_conexao():
     try: 
